@@ -11,3 +11,5 @@
 !*.vcxproj
 !*.vcxproj.user
 
+!*.txt
+
