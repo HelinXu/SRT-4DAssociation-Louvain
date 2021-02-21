@@ -803,7 +803,7 @@ void KruskalAssociater::Associate()
 	CalcEpiEdges();
 	CalcTempEdges();
 
-
+	// @TODO paf edgesÔÚdetectionÀï
 	
 
 	CalcBoneNodes();

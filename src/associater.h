@@ -25,7 +25,7 @@ protected:
 
 	SkelType m_type;
 	std::map<std::string, Camera> m_cams;
-	std::vector<OpenposeDetection> m_detections;
+	std::vector<OpenposeDetection> m_detections;  // @TODO
 
 	std::map<int, Eigen::Matrix4Xf> m_skels3dPrev;
 	std::map<int, Eigen::Matrix3Xf> m_skels2d;
@@ -33,8 +33,13 @@ protected:
 	std::vector<std::vector<Eigen::VectorXi>> m_assignMap;
 	std::map<int, Eigen::MatrixXi> m_personsMap;
 	std::vector<std::vector<Eigen::Matrix3Xf>> m_jointRays;
-	std::vector<std::vector<std::vector<Eigen::MatrixXf>>> m_epiEdges;	// m_epiEdge[jIdx][viewA][viewB](jaCandiIdx, jbCandiIdx)
-	std::vector<std::vector<Eigen::MatrixXf>> m_tempEdges;				// m_tempEdge[jIdx][view](pIdx, jCandiIdx)
+	std::vector<std::vector<std::vector<Eigen::MatrixXf>>> m_epiEdges;	// m_epiEdge[jIdx][viewA][viewB](jaCandiIdx, jbCandiIdx) @TODO\
+																		epiEdge是连接不同视角的同一种关节的边\
+																		这个矩阵在jaCandiIdx和jb的交点那个单元格上存的值\
+																		是该条边已经计算得出的置信度，是个（0，1）的值\
+																		能不能再讲一下这个jaCandiIdx是什么\
+
+	std::vector<std::vector<Eigen::MatrixXf>> m_tempEdges;				// m_tempEdge[jIdx][view](pIdx, jCandiIdx) @TODO
 	
 	void Initialize();
 	void CalcJointRays();
