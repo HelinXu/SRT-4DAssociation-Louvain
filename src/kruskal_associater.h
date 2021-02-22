@@ -1,5 +1,7 @@
 #pragma once
 #include "associater.h"
+#include <iostream>
+#include <fstream>
 
 
 class KruskalAssociater : public Associater
@@ -17,6 +19,7 @@ public:
 	void SetViewCntWelsh(const float& _cViewCnt) { m_cViewCnt = _cViewCnt; }
 	void SetMinCheckCnt(const int& _minCheckCnt) { m_minCheckCnt = _minCheckCnt; }
 	void SetNodeMultiplex(const bool& _nodeMultiplex) { m_nodeMultiplex = _nodeMultiplex; }
+	void OutPutData();
 
 private:
 	struct BoneClique

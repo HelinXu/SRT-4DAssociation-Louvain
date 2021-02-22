@@ -804,11 +804,19 @@ void KruskalAssociater::Associate()
 	CalcTempEdges();
 
 	// @TODO paf edges‘⁄detection¿Ô
-	
+	OutPutData();
 
 	CalcBoneNodes();
 	CalcBoneEpiEdges();
 	CalcBoneTempEdges();
 	SpanTree();
 	CalcSkels2d();
+}
+
+void KruskalAssociater::OutPutData()
+{
+	std::ofstream outfile;
+	outfile.open("MyOutput.txt", std::ios::out | std::ios::trunc);
+
+	// @TODO
 }
