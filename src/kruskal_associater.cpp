@@ -823,20 +823,29 @@ void KruskalAssociater::OutPutData()
 	outfile.open("..\\Output.txt", std::ios::out | std::ios::trunc);
 	// @TODO
 	// 输出点
+	outfile << "J OverallIdx viewIdx joint种类0-18 该joint在图中的顺序 x y score" << endl;
+	int OverallIdx = 0;
+	vector<vector<vector<int > > > Cata;
 	for (int i = 0; i < 5; ++i) {
+		vector<vector<int> > tmp1;
 		for (int jointIdx = 0; jointIdx < 19; ++jointIdx) {
 			int JInThisView = m_detections[i].joints[jointIdx].cols();
+			vector<int> tmp;
 			for (int j = 0; j < JInThisView; ++j) {
-				//cout << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](j, 0)
-				//	<< " " << m_detections[i].joints[jointIdx](j, 1)
-				//	<< " " << m_detections[i].joints[jointIdx](j, 2) << endl;
 				// i视角，jointidx为关节编号，j为该视角内关节数量，然后是该joint信息。
-				outfile << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](0, j)
+				tmp.push_back(OverallIdx);
+				outfile << OverallIdx++ << " " << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](0, j)
 					<< " " << m_detections[i].joints[jointIdx](1, j)
 					<< " " << m_detections[i].joints[jointIdx](2, j) << endl;
 			}
+			tmp1.push_back(tmp);
 		}
+		Cata.push_back(tmp1);
 	}
-
+	outfile << "P " << endl;
+	//OverallIdx = 0;
+	for (int i = 0; i < 5; ++i) {
+		int JInThisView = m_detections[i].pafs[pafIdx].cols();
+	}
 	outfile.close();
 }
