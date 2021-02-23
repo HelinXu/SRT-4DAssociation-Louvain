@@ -111,15 +111,15 @@ void KruskalAssociater::CalcBoneTempEdges()
 	}
 }
 
-         
+
 void KruskalAssociater::EnumCliques(std::vector<BoneClique>& cliques)
 {
 	// enum cliques
 	const SkelDef& def = GetSkelDef(m_type);
 
 	std::vector<std::vector<Eigen::VectorXi>> availMap(def.pafSize, std::vector<Eigen::VectorXi>(m_cams.size()));
-	for (int pafIdx = 0; pafIdx < def.pafSize; pafIdx++) 
-		for (int view = 0; view < m_cams.size(); view++) 
+	for (int pafIdx = 0; pafIdx < def.pafSize; pafIdx++)
+		for (int view = 0; view < m_cams.size(); view++)
 			availMap[pafIdx][view].setOnes(m_boneNodes[pafIdx][view].size());
 
 	for (int validViewCnt = int(m_cams.size()); validViewCnt > 0; validViewCnt--) {
@@ -271,7 +271,7 @@ void KruskalAssociater::CalcCliqueScore(BoneClique& clique)
 	// hier score
 	const float hierScore = 1.f - powf(float(m_pafHier[clique.pafIdx]) / float(m_pafHierSize), 4);
 
-	clique.score = (m_wEpi * epiScore + m_wTemp * tempScore + m_wPaf * pafScore + m_wView * viewScore+ m_wHier * hierScore)
+	clique.score = (m_wEpi * epiScore + m_wTemp * tempScore + m_wPaf * pafScore + m_wView * viewScore + m_wHier * hierScore)
 		/ (m_wEpi + m_wTemp + m_wPaf + m_wView + m_wHier);
 }
 
@@ -294,7 +294,7 @@ int KruskalAssociater::CheckJointCompatibility(const int& view, const int& jIdx,
 	const SkelDef& def = GetSkelDef(m_type);
 	const Eigen::MatrixXi& person = m_personsMap.find(pIdx)->second;
 	int checkCnt = 0;
-	
+
 	// joint conflict 
 	if (person(jIdx, view) != -1 && person(jIdx, view) != candiIdx)
 		return -1;
@@ -357,7 +357,7 @@ int KruskalAssociater::CheckPersonCompatibility(const int& masterIdx, const int&
 	// master is tracked with temporal person so check the temporal edge
 	if (masterIdx < m_skels3dPrev.size())
 		for (int jIdx = 0; jIdx < def.jointSize; jIdx++)
-			if (slave(jIdx,view) != -1)
+			if (slave(jIdx, view) != -1)
 				if (m_tempEdges[jIdx][view](masterIdx, slave(jIdx, view)) > 0.f)
 					checkCnt++;
 				else
@@ -425,8 +425,8 @@ void KruskalAssociater::MergePerson(const int& masterIdx, const int& slaveIdx)
 	const SkelDef& def = GetSkelDef(m_type);
 	for (int view = 0; view < m_cams.size(); view++)
 		for (int jIdx = 0; jIdx < def.jointSize; jIdx++)
-			if (slave(jIdx,view) != -1) {
-				master(jIdx,view) = slave(jIdx, view);
+			if (slave(jIdx, view) != -1) {
+				master(jIdx, view) = slave(jIdx, view);
 				m_assignMap[view][jIdx][slave(jIdx, view)] = masterIdx;
 			}
 	m_personsMap.erase(slaveIter);
@@ -469,9 +469,9 @@ void KruskalAssociater::Voting::Parse()
 		for (int index = 0; index < 2; index++) {
 			auto iter = std::max_element(_vote.begin(), _vote.end(), [&index](
 				const std::pair<int, Eigen::Vector2i>& l, const std::pair<int, Eigen::Vector2i>& r) {
-				return (l.second[index] < r.second[index]);
-			});
-			
+					return (l.second[index] < r.second[index]);
+				});
+
 			(i == 0 ? fst : sec)[index] = iter->first;
 			(i == 0 ? fstCnt : secCnt)[index] = iter->second[index];
 			iter->second[index] = 0;
@@ -645,7 +645,7 @@ void KruskalAssociater::AssignTopClique(std::vector<BoneClique>& cliques)
 				if (clique.proposal[view] >= 0) {
 					const Eigen::Vector2i& node = nodes[view][clique.proposal[view]];
 					const Eigen::Vector2i assignIdx(m_assignMap[view][jIdxPair.x()][node.x()], m_assignMap[view][jIdxPair.y()][node.y()]);
-					if (assignIdx.x() == masterIdx && assignIdx.y() == masterIdx) 
+					if (assignIdx.x() == masterIdx && assignIdx.y() == masterIdx)
 						continue;
 					else if (CheckJointCompatibility(view, jIdxPair.x(), node.x(), masterIdx) == -1
 						|| CheckJointCompatibility(view, jIdxPair.y(), node.y(), masterIdx) == -1)
@@ -697,8 +697,8 @@ void KruskalAssociater::AssignTopClique(std::vector<BoneClique>& cliques)
 						voting.vote.find(voting.fst[index])->second[index] = voting.vote.find(voting.sec[index])->second[index] = 0;
 						auto iter = std::max_element(voting.vote.begin(), voting.vote.end(), [&index](
 							const std::pair<int, Eigen::Vector2i>& l, const std::pair<int, Eigen::Vector2i>& r) {
-							return(l.second[index] < r.second[index]);
-						});
+								return(l.second[index] < r.second[index]);
+							});
 						voting.sec[index] = iter->first;
 						voting.secCnt[index] = iter->second[index];
 					}
@@ -802,8 +802,8 @@ void KruskalAssociater::Associate()
 	CalcJointRays();
 	CalcEpiEdges();
 	CalcTempEdges();
-
 	// @TODO paf edges在detection里
+	//目前只是输出这一帧。
 	OutPutData();
 
 	CalcBoneNodes();
@@ -815,8 +815,28 @@ void KruskalAssociater::Associate()
 
 void KruskalAssociater::OutPutData()
 {
+	using namespace std;
 	std::ofstream outfile;
-	outfile.open("MyOutput.txt", std::ios::out | std::ios::trunc);
-
+	outfile.open("..\\test.txt", std::ios::out | std::ios::trunc);
+	outfile << "test" << std::endl;
+	outfile.close();
+	outfile.open("..\\Output.txt", std::ios::out | std::ios::trunc);
 	// @TODO
+	// 输出点
+	for (int i = 0; i < 5; ++i) {
+		for (int jointIdx = 0; jointIdx < 19; ++jointIdx) {
+			int JInThisView = m_detections[i].joints[jointIdx].cols();
+			for (int j = 0; j < JInThisView; ++j) {
+				//cout << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](j, 0)
+				//	<< " " << m_detections[i].joints[jointIdx](j, 1)
+				//	<< " " << m_detections[i].joints[jointIdx](j, 2) << endl;
+				// i视角，jointidx为关节编号，j为该视角内关节数量，然后是该joint信息。
+				outfile << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](0, j)
+					<< " " << m_detections[i].joints[jointIdx](1, j)
+					<< " " << m_detections[i].joints[jointIdx](2, j) << endl;
+			}
+		}
+	}
+
+	outfile.close();
 }

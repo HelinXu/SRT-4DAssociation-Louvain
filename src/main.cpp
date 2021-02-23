@@ -85,7 +85,7 @@ int main()
 		cv::imwrite("../output/detect/" + std::to_string(frameIdx) + ".jpg", detectImg);
 		cv::imwrite("../output/assoc/" + std::to_string(frameIdx) + ".jpg", assocImg);
 		cv::imwrite("../output/reproj/" + std::to_string(frameIdx) + ".jpg", reprojImg);
-		std::cout << std::to_string(frameIdx) << std::endl;
+		std::cout << " " + std::to_string(frameIdx) << std::endl; // xhl 添加了空格以看清楚
 	}
 	return 0;
 }
