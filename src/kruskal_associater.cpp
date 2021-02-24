@@ -823,29 +823,46 @@ void KruskalAssociater::OutPutData()
 	outfile.open("..\\Output.txt", std::ios::out | std::ios::trunc);
 	// @TODO
 	// 输出点
-	outfile << "J OverallIdx viewIdx joint种类0-18 该joint在图中的顺序 x y score" << endl;
+	outfile << "J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score" << endl;
 	int OverallIdx = 0;
 	vector<vector<vector<int > > > Cata;
-	for (int i = 0; i < 5; ++i) {
+	for (int viewIdx = 0; viewIdx < 5; ++viewIdx) {
 		vector<vector<int> > tmp1;
-		for (int jointIdx = 0; jointIdx < 19; ++jointIdx) {
-			int JInThisView = m_detections[i].joints[jointIdx].cols();
+		for (int jointIdx = 0; jointIdx < GetSkelDef(SKEL19).jointSize; ++jointIdx) {
+			int CandidNum = m_detections[viewIdx].joints[jointIdx].cols();
 			vector<int> tmp;
-			for (int j = 0; j < JInThisView; ++j) {
+			for (int CandidIdx = 0; CandidIdx < CandidNum; ++CandidIdx) {
 				// i视角，jointidx为关节编号，j为该视角内关节数量，然后是该joint信息。
 				tmp.push_back(OverallIdx);
-				outfile << OverallIdx++ << " " << i << " " << jointIdx << " " << j << " " << m_detections[i].joints[jointIdx](0, j)
-					<< " " << m_detections[i].joints[jointIdx](1, j)
-					<< " " << m_detections[i].joints[jointIdx](2, j) << endl;
+				outfile << OverallIdx++ << " " << viewIdx << " " << jointIdx << " " << CandidIdx 
+					<< " " << m_detections[viewIdx].joints[jointIdx](0, CandidIdx)
+					<< " " << m_detections[viewIdx].joints[jointIdx](1, CandidIdx)
+					<< " " << m_detections[viewIdx].joints[jointIdx](2, CandidIdx) << endl;
 			}
 			tmp1.push_back(tmp);
 		}
 		Cata.push_back(tmp1);
 	}
-	outfile << "P " << endl;
+	outfile << "P viewIdx, pafIdx, aOverAllIdx, bOverAllIdx, CandidAIdx, CandidBIdx, score" << endl;
 	//OverallIdx = 0;
-	for (int i = 0; i < 5; ++i) {
-		int JInThisView = m_detections[i].pafs[pafIdx].cols();
+	// viewIdx, pafIdx, jointAIdx, jointBIdx, CandidAIdx, CandidBIdx, score
+	for (int viewIdx = 0; viewIdx < 5; ++viewIdx) {
+		
+		for (int pafIdx = 0; pafIdx < GetSkelDef(SKEL19).pafSize; ++pafIdx) {
+			int jaIdx = GetSkelDef(SKEL19).pafDict(0, pafIdx);
+			int jbIdx = GetSkelDef(SKEL19).pafDict(1, pafIdx);
+			int CandidANum = m_detections[viewIdx].joints[jaIdx].cols();
+			int CandidBNum = m_detections[viewIdx].joints[jbIdx].cols();
+			for (int canAIdx = 0; canAIdx < CandidANum; ++canAIdx) {
+				for (int canBIdx = 0; canBIdx < CandidBNum; ++canBIdx) {
+					int aOverAllIdx = Cata[viewIdx][jaIdx][canAIdx];
+					int bOverAllIdx = Cata[viewIdx][jbIdx][canBIdx];
+					outfile << viewIdx << " " << pafIdx << " " 
+						<< aOverAllIdx << " " << bOverAllIdx << " " << canAIdx << " " << canBIdx << " " <<
+						m_detections[viewIdx].pafs[pafIdx](canAIdx, canBIdx) << endl; // 此处xy是否交换 有待检验。
+				}
+			}
+		}
 	}
 	outfile.close();
 }
