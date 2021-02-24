@@ -440,35 +440,43 @@ def build_from_4d(frameIdx):
 
 def main():
     capture = []  # 这个数据类型对了吗
+    img = []
     frameIdx = 0
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
+        img.append(None)  # 需要初始化开辟空间
 
     # total_frame = capture[0].get(cv2.CAP_PROP_FRAME_COUNT)  # 视频的总帧数
     # for frameIdx in range(min(30, total_frame)):
     while True:
-        for viewIdx in range(5):
-            ret, frame = capture[viewIdx].read()
-            if not ret:
-                break  # 当获取完最后一帧就结束
-            cv2.imwrite('../output/tmp/' + str(frameIdx) + str(viewIdx) + '.jpg', frame)  # 存储为图像
-        frameIdx += 1
-        if not ret:
-            break
-
-        # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
         partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
-
         # draw the graph
-        pos = nx.spring_layout(G)
+        pos = {}
+        for node, data in G.nodes.items():
+            pos[node] = (data.get('x'), -data.get('y') - 1080 * data.get('viewIdx')) # 这里正负号好像错了
         # color the nodes according to their partition
         cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
         nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
                                cmap=cmap, node_color=list(partition.values()))
         nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
+        plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
+        # networkx 存文件 https://www.coder.work/article/361314
         plt.show()
+        for viewIdx in range(5):
+            # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
+            ret, img[viewIdx] = capture[viewIdx].read()
+            if not ret:
+                break  # 当获取完最后一帧就结束
+        frame = cv2.vconcat(img)  # Python OPenCV 图片简单拼接 hconcat vconcat函数使用
+        cv2.imwrite('../output/tmp/' + str(frameIdx) + '.jpg', frame)  # 存储为图像
+        frameIdx += 1
+        if not ret:
+            break
+
+
+
 
 
 if __name__ == '__main__':
