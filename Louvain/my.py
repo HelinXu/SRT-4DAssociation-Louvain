@@ -393,21 +393,6 @@ def __randomize(items, random_state):
     return randomized_items
 
 
-def main():
-    G = build_from_4d()
-    # compute the best partition
-    partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
-
-    # draw the graph
-    pos = nx.spring_layout(G)
-    # color the nodes according to their partition
-    cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
-    nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
-                           cmap=cmap, node_color=list(partition.values()))
-    nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
-    plt.show()
-
-
 def build_graph():
     # just for test
     G = nx.Graph()
@@ -427,41 +412,63 @@ def build_graph():
 
 def build_from_4d(frameIdx):
     G = nx.Graph()
-    f = open("../output/txt/frame" + frameIdx + ".txt", "r")
-    while True:
-        f.readline()  # 0 Frame
-        f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
-        while True:  # 读入并添加所有的点
-            line = f.readline().split()
-            if line[0] == 'P':
-                break
-            G.add_node(int(line[0]),
-                       viewIdx=int(line[1]),
-                       jointIdx=int(line[2]),
-                       candidIdx=int(line[3]),
-                       x=float(line[4]),
-                       y=float(line[5]),
-                       score=float(line[6]))
-        while True:  # 读入并添加所有的边
-            line = f.readline().split()
-            if line[0] == 'E':
-                break
-            G.add_edge(int(line[2]),
-                       int(line[3]),
-                       viewIdx=int(line[0]),
-                       pafIdx=int(line[1]),
-                       weight=float(line[6]))
+    f = open("../output/txt/frame" + str(frameIdx) + ".txt", "r")
+    f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
+    while True:  # 读入并添加所有的点
+        line = f.readline().split()
+        if line[0] == 'P':
+            break
+        G.add_node(int(line[0]),
+                   viewIdx=int(line[1]),
+                   jointIdx=int(line[2]),
+                   candidIdx=int(line[3]),
+                   x=float(line[4]),
+                   y=float(line[5]),
+                   score=float(line[6]))
+    while True:  # 读入并添加所有的边
+        line = f.readline().split()
+        if line[0] == 'E':
+            break
+        G.add_edge(int(line[2]),
+                   int(line[3]),
+                   viewIdx=int(line[0]),
+                   pafIdx=int(line[1]),
+                   weight=float(line[6]))
+        # 还没有添加epi边
     return G
 
 
-def print_to_img():
-    # 将结果打印在图片上。
-
+def main():
+    capture = []  # 这个数据类型对了吗
+    frameIdx = 0
     for i in range(5):
-        video_path = "../data/shelf/video/" + i + ".mp4"
-        capture = cv2.VideoCapture(video_path)
+        capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
 
+    # total_frame = capture[0].get(cv2.CAP_PROP_FRAME_COUNT)  # 视频的总帧数
+    # for frameIdx in range(min(30, total_frame)):
+    while True:
+        for viewIdx in range(5):
+            ret, frame = capture[viewIdx].read()
+            if not ret:
+                break  # 当获取完最后一帧就结束
+            cv2.imwrite('../output/tmp/' + str(frameIdx) + str(viewIdx) + '.jpg', frame)  # 存储为图像
+        frameIdx += 1
+        if not ret:
+            break
 
+        # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
+        G = build_from_4d(frameIdx)  # frameIdx
+        # compute the best partition
+        partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
+
+        # draw the graph
+        pos = nx.spring_layout(G)
+        # color the nodes according to their partition
+        cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
+        nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
+                               cmap=cmap, node_color=list(partition.values()))
+        nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
+        plt.show()
 
 
 if __name__ == '__main__':
