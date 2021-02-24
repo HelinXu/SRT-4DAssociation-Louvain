@@ -8,7 +8,7 @@ class KruskalAssociater : public Associater
 {
 public:
 	KruskalAssociater(const SkelType& type, const std::map<std::string, Camera>& cams);
-	virtual void Associate() override;
+	virtual void Associate(int FrameCount) override; // @TODO
 
 	void SetPlaneThetaWelsh(const float& _cPlaneTheta) { m_cPlaneTheta = _cPlaneTheta; }
 	void SetEpiWeight(const float& _wEpi) { m_wEpi = _wEpi; }
@@ -19,7 +19,7 @@ public:
 	void SetViewCntWelsh(const float& _cViewCnt) { m_cViewCnt = _cViewCnt; }
 	void SetMinCheckCnt(const int& _minCheckCnt) { m_minCheckCnt = _minCheckCnt; }
 	void SetNodeMultiplex(const bool& _nodeMultiplex) { m_nodeMultiplex = _nodeMultiplex; }
-	void OutPutData();
+	void OutPutData(int FrameCount);
 
 private:
 	struct BoneClique

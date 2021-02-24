@@ -429,7 +429,7 @@ def build_from_4d():
     f = open("..\Output.txt", "r")
     f.readline()
     while True:  # 读入并添加所有的点
-        line = f.readline().split(' ')
+        line = f.readline().split()
         if line[0] == 'P':
             break
         G.add_node(int(line[0]),

@@ -16,7 +16,7 @@ public:
 	void SetMaxEpiDist(const float& _maxEpiDist) { m_maxEpiDist = _maxEpiDist; }
 	void SetMaxTempDist(const float& _maxTempDist) { m_maxTempDist = _maxTempDist; }
 	void SetMinAsgnCnt(const int& _minAsgnCnt) { m_minAsgnCnt = _minAsgnCnt; }
-	virtual void Associate() = 0;
+	virtual void Associate(int FrameCount) = 0;
 
 protected:
 	float m_maxEpiDist = 0.2f;
@@ -40,6 +40,7 @@ protected:
 																		能不能再讲一下这个jaCandiIdx是什么\
 
 	std::vector<std::vector<Eigen::MatrixXf>> m_tempEdges;				// m_tempEdge[jIdx][view](pIdx, jCandiIdx) @TODO
+	int m_FrameCount;
 	
 	void Initialize();
 	void CalcJointRays();

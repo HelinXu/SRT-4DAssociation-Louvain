@@ -797,14 +797,14 @@ void KruskalAssociater::SpanTree()
 }
 
 
-void KruskalAssociater::Associate()
+void KruskalAssociater::Associate(int FrameCount)
 {
 	CalcJointRays();
 	CalcEpiEdges();
 	CalcTempEdges();
 	// @TODO paf edges在detection里
 	//目前只是输出这一帧。
-	OutPutData();
+	OutPutData(FrameCount);
 
 	CalcBoneNodes();
 	CalcBoneEpiEdges();
@@ -813,16 +813,14 @@ void KruskalAssociater::Associate()
 	CalcSkels2d();
 }
 
-void KruskalAssociater::OutPutData()
+void KruskalAssociater::OutPutData(int FrameCount)
 {
 	using namespace std;
 	std::ofstream outfile;
-	outfile.open("..\\test.txt", std::ios::out | std::ios::trunc);
-	outfile << "test" << std::endl;
-	outfile.close();
-	outfile.open("..\\Output.txt", std::ios::out | std::ios::trunc);
+	outfile.open("..\\Output.txt", std::ios::app);
 	// @TODO
 	// 输出点
+	outfile << FrameCount << " Frame" << endl;
 	outfile << "J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score" << endl;
 	int OverallIdx = 0;
 	vector<vector<vector<int > > > Cata;
@@ -864,7 +862,8 @@ void KruskalAssociater::OutPutData()
 			}
 		}
 	}
-
-
+	outfile << "E" << endl;
+	//epi Edges @TODO
+	outfile << "end of Frame " << FrameCount << endl;
 	outfile.close();
 }
