@@ -864,5 +864,7 @@ void KruskalAssociater::OutPutData()
 			}
 		}
 	}
+
+
 	outfile.close();
 }

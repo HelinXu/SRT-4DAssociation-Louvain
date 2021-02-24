@@ -10,6 +10,7 @@ import warnings
 
 import networkx as nx
 import numpy as np
+import cv2
 
 __PASS_MAX = -1
 __MIN = 0.0000001
@@ -393,7 +394,7 @@ def __randomize(items, random_state):
 
 
 def main():
-    G = build_graph()
+    G = build_from_4d()
     # compute the best partition
     partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
 
@@ -421,6 +422,38 @@ def build_graph():
         # print(int(list[0]), int(list[1]), float(list[2]))
         # print(float(G.degree(1, weight='weight')))
     return G
+
+
+def build_from_4d():
+    G = nx.Graph()
+    f = open("..\Output.txt", "r")
+    f.readline()
+    while True:  # 读入并添加所有的点
+        line = f.readline().split(' ')
+        if line[0] == 'P':
+            break
+        G.add_node(int(line[0]),
+                   viewIdx=int(line[1]),
+                   jointIdx=int(line[2]),
+                   candidIdx=int(line[3]),
+                   x=float(line[4]),
+                   y=float(line[5]),
+                   score=float(line[6]))
+    while True:  # 读入并添加所有的边
+        line = f.readline().split()
+        if line[0] == 'E':
+            break
+        G.add_edge(int(line[2]),
+                   int(line[3]),
+                   viewIdx=int(line[0]),
+                   pafIdx=int(line[1]),
+                   weight=float(line[6]))
+    return G
+
+
+
+
+
 
 
 if __name__ == '__main__':
