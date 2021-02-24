@@ -817,10 +817,10 @@ void KruskalAssociater::OutPutData(int FrameCount)
 {
 	using namespace std;
 	std::ofstream outfile;
-	outfile.open("..\\Output.txt", std::ios::app);
+	outfile.open("../output/txt/frame" + to_string(FrameCount) + ".txt", std::ios::out | std::ios::trunc);
 	// @TODO
 	// 输出点
-	outfile << FrameCount << " Frame" << endl;
+	// outfile << FrameCount << " Frame" << endl;
 	outfile << "J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score" << endl;
 	int OverallIdx = 0;
 	vector<vector<vector<int > > > Cata;

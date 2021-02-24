@@ -9,12 +9,6 @@
 
 int main()
 {
-	std::ofstream outfile;
-	outfile.open("..\\Output.txt", std::ios::out | std::ios::trunc);
-	outfile.clear();
-	outfile.close();
-
-
 	std::map<std::string, Camera> cameras = ParseCameras("../data/shelf/calibration.json"); //?1
 	Eigen::Matrix3Xf projs(3, cameras.size() * 4);
 	std::vector<cv::Mat> rawImgs(cameras.size());

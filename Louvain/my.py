@@ -409,6 +409,7 @@ def main():
 
 
 def build_graph():
+    # just for test
     G = nx.Graph()
     f = open("demofile.txt", "r")
     dot_num = int(f.readline())
@@ -424,34 +425,41 @@ def build_graph():
     return G
 
 
-def build_from_4d():
+def build_from_4d(frameIdx):
     G = nx.Graph()
-    f = open("..\Output.txt", "r")
-    f.readline()
-    while True:  # 读入并添加所有的点
-        line = f.readline().split()
-        if line[0] == 'P':
-            break
-        G.add_node(int(line[0]),
-                   viewIdx=int(line[1]),
-                   jointIdx=int(line[2]),
-                   candidIdx=int(line[3]),
-                   x=float(line[4]),
-                   y=float(line[5]),
-                   score=float(line[6]))
-    while True:  # 读入并添加所有的边
-        line = f.readline().split()
-        if line[0] == 'E':
-            break
-        G.add_edge(int(line[2]),
-                   int(line[3]),
-                   viewIdx=int(line[0]),
-                   pafIdx=int(line[1]),
-                   weight=float(line[6]))
+    f = open("../output/txt/frame" + frameIdx + ".txt", "r")
+    while True:
+        f.readline()  # 0 Frame
+        f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
+        while True:  # 读入并添加所有的点
+            line = f.readline().split()
+            if line[0] == 'P':
+                break
+            G.add_node(int(line[0]),
+                       viewIdx=int(line[1]),
+                       jointIdx=int(line[2]),
+                       candidIdx=int(line[3]),
+                       x=float(line[4]),
+                       y=float(line[5]),
+                       score=float(line[6]))
+        while True:  # 读入并添加所有的边
+            line = f.readline().split()
+            if line[0] == 'E':
+                break
+            G.add_edge(int(line[2]),
+                       int(line[3]),
+                       viewIdx=int(line[0]),
+                       pafIdx=int(line[1]),
+                       weight=float(line[6]))
     return G
 
 
+def print_to_img():
+    # 将结果打印在图片上。
 
+    for i in range(5):
+        video_path = "../data/shelf/video/" + i + ".mp4"
+        capture = cv2.VideoCapture(video_path)
 
 
 
