@@ -11,6 +11,7 @@ import warnings
 import networkx as nx
 import numpy as np
 import cv2
+import math
 
 __PASS_MAX = -1
 __MIN = 0.0000001
@@ -437,10 +438,40 @@ def build_from_4d(frameIdx):
         # 还没有添加epi边
     return G
 
+def hsv2rgb(h, s, v):
+    h = float(h)
+    s = float(s)
+    v = float(v)
+    h60 = h / 60.0
+    h60f = math.floor(h60)
+    hi = int(h60f) % 6
+    f = h60 - h60f
+    p = v * (1 - s)
+    q = v * (1 - f * s)
+    t = v * (1 - (1 - f) * s)
+    r, g, b = 0, 0, 0
+    if hi == 0: r, g, b = v, t, p
+    elif hi == 1: r, g, b = q, v, p
+    elif hi == 2: r, g, b = p, v, t
+    elif hi == 3: r, g, b = p, q, v
+    elif hi == 4: r, g, b = t, p, v
+    elif hi == 5: r, g, b = v, p, q
+    r, g, b = int(r * 255), int(g * 255), int(b * 255)
+    return r, g, b
+
+
+def get_color(idx, max):
+    r = math.cos((2.0 / 3.0 + 16.0 * idx / max) * math.pi) * 256
+    g = math.cos((2.0 / 3.0 - 16.0 * idx / max) * math.pi) * 256
+    b = math.cos(16.0 * idx / max * math.pi) * 256
+    return r, g, b
+
 
 def main():
     capture = []  # 这个数据类型对了吗
     img = []
+
+    node_img = [[] for i in range(5)]  # 这个用来从networkx画点
     frameIdx = 0
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
@@ -448,32 +479,48 @@ def main():
 
     # total_frame = capture[0].get(cv2.CAP_PROP_FRAME_COUNT)  # 视频的总帧数
     # for frameIdx in range(min(30, total_frame)):
+
     while True:
+        node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
         partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
         # draw the graph
+        # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
+        maxCommuIdx = max(partition.values())
         pos = {}
         for node, data in G.nodes.items():
-            pos[node] = (data.get('x'), -data.get('y') - 1080 * data.get('viewIdx')) # 这里正负号好像错了
-        # color the nodes according to their partition
-        cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
-        nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
-                               cmap=cmap, node_color=list(partition.values()))
-        nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
-        plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
-        # networkx 存文件 https://www.coder.work/article/361314
-        plt.show()
+            pos[node] = (data.get('x'), -data.get('y') - 1080 * data.get('viewIdx'))  # 这里正负号好像错了
+            data['value'] = partition[node]
+            node_list[data.get("viewIdx")].append(data)
+
         for viewIdx in range(5):
-            # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
             ret, img[viewIdx] = capture[viewIdx].read()
             if not ret:
                 break  # 当获取完最后一帧就结束
+            # node_img[viewIdx] = np.zeros([512, 512, 3], np.uint8)  # 创建一副黑色的图片
+            for data in node_list[viewIdx]:
+                # cv2.circle(node_img[viewIdx], center=(int(data.get('x')), int(data.get('y'))), radius=2, color=(100,100,100))
+                # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
+                cv2.circle(img[viewIdx], center=(int(data.get('x')), int(data.get('y'))), radius=5,
+                           color=get_color(data.get('value'), maxCommuIdx), thickness=-1)
+                cv2.putText(img[viewIdx], text=str(data.get('value')), org=(int(data.get('x')), int(data.get('y'))),
+                            color=(256,256,256), fontScale=0.3, fontFace=cv2.FONT_HERSHEY_SIMPLEX)
         frame = cv2.vconcat(img)  # Python OPenCV 图片简单拼接 hconcat vconcat函数使用
-        cv2.imwrite('../output/tmp/' + str(frameIdx) + '.jpg', frame)  # 存储为图像
+        cv2.imwrite('../output/tmp/' + str(frameIdx * 100) + str(maxCommuIdx) + '.jpg', frame)  # 存储为图像
         frameIdx += 1
+        # node_list.clear()
         if not ret:
             break
+
+    # color the nodes according to their partition
+    cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
+    nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
+                           cmap=cmap, node_color=list(partition.values()))
+    nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
+    plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
+    # networkx 存文件 https://www.coder.work/article/361314
+    plt.show()
 
 
 
