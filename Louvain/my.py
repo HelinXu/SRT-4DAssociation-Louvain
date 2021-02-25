@@ -460,10 +460,10 @@ def hsv2rgb(h, s, v):
     return r, g, b
 
 
-def get_color(idx, max):
-    r = math.cos((2.0 / 3.0 + 16.0 * idx / max) * math.pi) * 256
-    g = math.cos((2.0 / 3.0 - 16.0 * idx / max) * math.pi) * 256
-    b = math.cos(16.0 * idx / max * math.pi) * 256
+def get_color(idx, maxIdx):  # 随便搞了个哈希
+    r = math.cos((2.0 / 3.0 * math.pi + 179.13 * idx / (maxIdx + 0.12))) * 256
+    g = math.cos((2.0 / 3.0 * math.pi + 101.19 * idx / (maxIdx + 0.57))) * 256
+    b = math.cos(133.51 * idx / (maxIdx + 0.34) * math.pi) * 256
     return r, g, b
 
 
@@ -505,9 +505,9 @@ def main():
                 cv2.circle(img[viewIdx], center=(int(data.get('x')), int(data.get('y'))), radius=5,
                            color=get_color(data.get('value'), maxCommuIdx), thickness=-1)
                 cv2.putText(img[viewIdx], text=str(data.get('value')), org=(int(data.get('x')), int(data.get('y'))),
-                            color=(256,256,256), fontScale=0.3, fontFace=cv2.FONT_HERSHEY_SIMPLEX)
+                            color=(256, 256, 256), fontScale=0.3, fontFace=cv2.FONT_HERSHEY_TRIPLEX, thickness=1)
         frame = cv2.vconcat(img)  # Python OPenCV 图片简单拼接 hconcat vconcat函数使用
-        cv2.imwrite('../output/tmp/' + str(frameIdx * 100) + str(maxCommuIdx) + '.jpg', frame)  # 存储为图像
+        cv2.imwrite('../output/tmp/' + str(frameIdx) + '.jpg', frame)  # 存储为图像
         frameIdx += 1
         # node_list.clear()
         if not ret:

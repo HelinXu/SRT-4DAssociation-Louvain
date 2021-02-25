@@ -1,0 +1,5 @@
+def get_color(idx, maxIdx):  # 随便搞了个哈希
+    r = math.cos((2.0 / 3.0 * math.pi + 179.13 * idx / (maxIdx + 0.12))) * 256
+    g = math.cos((2.0 / 3.0 * math.pi + 101.19 * idx / (maxIdx + 0.57))) * 256
+    b = math.cos(133.51 * idx / (maxIdx + 0.34) * math.pi) * 256
+    return r, g, b
