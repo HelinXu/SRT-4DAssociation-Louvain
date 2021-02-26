@@ -862,8 +862,31 @@ void KruskalAssociater::OutPutData(int FrameCount)
 			}
 		}
 	}
-	outfile << "E" << endl;
+	outfile << "E jointIdx viewA viewB aOverAllIdx bOverallIdx score" << endl;
+	// m_epiEdge[jIdx][viewA][viewB](jaCandiIdx, jbCandiIdx) @TODO\
+	epiEdge是连接不同视角的同一种关节的边\
+	这个矩阵在jaCandiIdx和jb的交点那个单元格上存的值\
+	是该条边已经计算得出的置信度，是个（0，1）的值\
+	能不能再讲一下这个jaCandiIdx是什么\
 	//epi Edges @TODO
+	// 
+	for (int jointIdx = 0; jointIdx < GetSkelDef(SKEL19).jointSize; ++jointIdx) {
+		for (int viewa = 0; viewa < 5; ++viewa) {
+			for (int viewb = viewa + 1; viewb < 5; ++viewb) {
+				int CandidANum = m_detections[viewa].joints[jointIdx].cols();
+				int CandidBNum = m_detections[viewb].joints[jointIdx].cols();
+				for (int canAIdx = 0; canAIdx < CandidANum; ++canAIdx) {
+					for (int canBIdx = 0; canBIdx < CandidBNum; ++canBIdx) {
+						int aOverAllIdx = Cata[viewa][jointIdx][canAIdx];
+						int bOverAllIdx = Cata[viewb][jointIdx][canBIdx];
+						outfile << jointIdx << " " << viewa << " " << viewb << " "
+							<< aOverAllIdx << " " << bOverAllIdx << " " <<
+							m_epiEdges[jointIdx][viewa][viewb](canAIdx, canBIdx) << endl;
+					}
+				}
+			}
+		}
+	}
 	outfile << "end of Frame " << FrameCount << endl;
 	outfile.close();
 }
