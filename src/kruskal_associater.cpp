@@ -800,6 +800,7 @@ void KruskalAssociater::SpanTree()
 void KruskalAssociater::Associate(int FrameCount)
 {
 	CalcJointRays();
+	CalcPafEdges();
 	CalcEpiEdges();
 	CalcTempEdges();
 	// @TODO paf edgesÔÚdetectionÀï

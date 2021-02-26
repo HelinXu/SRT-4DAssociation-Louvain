@@ -435,7 +435,14 @@ def build_from_4d(frameIdx):
                    viewIdx=int(line[0]),
                    pafIdx=int(line[1]),
                    weight=float(line[6]))
-        # 还没有添加epi边
+    while True:
+        # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
+        line = f.readline().split()
+        if line[0] == 'end':
+            break
+        G.add_edge(int(line[3]),
+                   int(line[4]),
+                   weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
     return G
 
 def hsv2rgb(h, s, v):
@@ -484,7 +491,7 @@ def main():
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
-        partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
+        partition = best_partition(G, resolution=100.0)  # 返回一个字典：node 2 community
         # draw the graph
         # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
         maxCommuIdx = max(partition.values())
@@ -512,15 +519,14 @@ def main():
         # node_list.clear()
         if not ret:
             break
-
-    # color the nodes according to their partition
-    cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
-    nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
-                           cmap=cmap, node_color=list(partition.values()))
-    nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight'] * 10) for (u, v, d) in G.edges(data=True)])
-    plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
-    # networkx 存文件 https://www.coder.work/article/361314
-    plt.show()
+        # color the nodes according to their partition
+        cmap = cm.get_cmap('viridis', max(partition.values()) + 1)  # 以列表返回字典里的所有值:所属的community编号
+        nx.draw_networkx_nodes(G, pos, G.nodes(), node_size=40,
+                               cmap=cmap, node_color=list(partition.values()))
+        nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight']) for (u, v, d) in G.edges(data=True)])
+        plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
+        # networkx 存文件 https://www.coder.work/article/361314
+        plt.show()
 
 
 

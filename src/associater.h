@@ -22,6 +22,7 @@ protected:
 	float m_maxEpiDist = 0.2f;
 	float m_maxTempDist = 0.5f;
 	int m_minAsgnCnt = 5;
+	bool m_normalizeEdges = true;
 
 	SkelType m_type;
 	std::map<std::string, Camera> m_cams;
@@ -44,6 +45,7 @@ protected:
 	
 	void Initialize();
 	void CalcJointRays();
+	void CalcPafEdges();
 	void CalcEpiEdges();
 	void CalcTempEdges();
 	void CalcSkels2d();

@@ -85,7 +85,39 @@ void Associater::CalcEpiEdges()
 							epi(jaCandiIdx, jbCandiIdx) = 1.f - dist / m_maxEpiDist;
 					}
 				}
+				if (m_normalizeEdges) {
+					Eigen::VectorXf rowFactor = epi.rowwise().sum().transpose().cwiseMax(1.f);
+					Eigen::VectorXf colFactor = epi.colwise().sum().cwiseMax(1.f);
+					for (int i = 0; i < rowFactor.size(); i++)
+						epi.row(i) /= rowFactor[i];
+
+					for (int i = 0; i < colFactor.size(); i++)
+						epi.col(i) /= colFactor[i];
+				}
 				m_epiEdges[jIdx][viewB][viewA] = epi.transpose();
+			}
+		}
+	}
+}
+
+
+void Associater::CalcPafEdges()
+{
+	const SkelDef& def = GetSkelDef(m_type);
+	if (m_normalizeEdges) {
+#pragma omp parallel for
+		for (int pafIdx = 0; pafIdx < def.pafSize; pafIdx++) {
+			const Eigen::Vector2i jIdxPair = def.pafDict.col(pafIdx).transpose();
+			for (auto&& detection : m_detections) {
+				auto&& pafs = detection.pafs[pafIdx];
+				if (pafs.size() > 0) {
+					Eigen::VectorXf rowFactor = pafs.rowwise().sum().transpose().cwiseMax(1.f);
+					Eigen::VectorXf colFactor = pafs.colwise().sum().cwiseMax(1.f);
+					for (int i = 0; i < rowFactor.size(); i++)
+						pafs.row(i) /= rowFactor[i];
+					for (int i = 0; i < colFactor.size(); i++)
+						pafs.col(i) /= colFactor[i];
+				}
 			}
 		}
 	}
