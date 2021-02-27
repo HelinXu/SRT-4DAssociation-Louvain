@@ -448,8 +448,7 @@ def build_from_4d(frameIdx):
         line = f.readline().split()
         if line[0] == 'P':
             break
-        if int(line[2]) == 0:
-            G.add_node(int(line[0]),
+        G.add_node(int(line[0]),
                    viewIdx=int(line[1]),
                    jointIdx=int(line[2]),
                    candidIdx=int(line[3]),
@@ -470,8 +469,7 @@ def build_from_4d(frameIdx):
         line = f.readline().split()
         if line[0] == 'end':
             break
-        if int(line[0]) == 0:
-            G.add_edge(int(line[3]),
+        G.add_edge(int(line[3]),
                    int(line[4]),
                    weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
     return G
@@ -495,7 +493,7 @@ def main():
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
-        partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
+        partition = best_partition(G, resolution=0.05)  # 返回一个字典：node 2 community
         # draw the graph
         # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
         maxCommuIdx = max(partition.values())
