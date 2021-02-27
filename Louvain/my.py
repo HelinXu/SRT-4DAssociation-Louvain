@@ -411,40 +411,6 @@ def build_graph():
     return G
 
 
-def build_from_4d(frameIdx):
-    G = nx.Graph()
-    f = open("../output/txt/frame" + str(frameIdx) + ".txt", "r")
-    f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
-    while True:  # 读入并添加所有的点
-        line = f.readline().split()
-        if line[0] == 'P':
-            break
-        G.add_node(int(line[0]),
-                   viewIdx=int(line[1]),
-                   jointIdx=int(line[2]),
-                   candidIdx=int(line[3]),
-                   x=float(line[4]),
-                   y=float(line[5]),
-                   score=float(line[6]))
-    while True:  # 读入并添加所有的边
-        line = f.readline().split()
-        if line[0] == 'E':
-            break
-        G.add_edge(int(line[2]),
-                   int(line[3]),
-                   viewIdx=int(line[0]),
-                   pafIdx=int(line[1]),
-                   weight=float(line[6]))
-    while True:
-        # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
-        line = f.readline().split()
-        if line[0] == 'end':
-            break
-        G.add_edge(int(line[3]),
-                   int(line[4]),
-                   weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
-    return G
-
 def hsv2rgb(h, s, v):
     h = float(h)
     s = float(s)
@@ -474,15 +440,51 @@ def get_color(idx, maxIdx):  # 随便搞了个哈希
     return r, g, b
 
 
+def build_from_4d(frameIdx):
+    G = nx.Graph()
+    f = open("../output/txt/frame" + str(frameIdx) + ".txt", "r")
+    f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
+    while True:  # 读入并添加所有的点
+        line = f.readline().split()
+        if line[0] == 'P':
+            break
+        G.add_node(int(line[0]),
+                   viewIdx=int(line[1]),
+                   jointIdx=int(line[2]),
+                   candidIdx=int(line[3]),
+                   x=float(line[4]),
+                   y=float(line[5]),
+                   score=float(line[6]))
+    while True:  # 读入并添加所有的边
+        line = f.readline().split()
+        if line[0] == 'E':
+            break
+        G.add_edge(int(line[2]),
+                   int(line[3]),
+                   viewIdx=int(line[0]),
+                   pafIdx=int(line[1]),
+                   weight=float(line[6])*4)
+    while True:
+        # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
+        line = f.readline().split()
+        if line[0] == 'end':
+            break
+        G.add_edge(int(line[3]),
+                   int(line[4]),
+                   weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
+    return G
+
+
 def main():
     capture = []  # 这个数据类型对了吗
     img = []
-
     node_img = [[] for i in range(5)]  # 这个用来从networkx画点
     frameIdx = 0
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
         img.append(None)  # 需要初始化开辟空间
+    f_h = int(capture[0].get(cv2.CAP_PROP_FRAME_HEIGHT))
+    f_w = int(capture[0].get(cv2.CAP_PROP_FRAME_WIDTH))
 
     # total_frame = capture[0].get(cv2.CAP_PROP_FRAME_COUNT)  # 视频的总帧数
     # for frameIdx in range(min(30, total_frame)):
@@ -491,13 +493,14 @@ def main():
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
-        partition = best_partition(G, resolution=100.0)  # 返回一个字典：node 2 community
+        partition = best_partition(G, resolution=10.0)  # 返回一个字典：node 2 community
         # draw the graph
         # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
         maxCommuIdx = max(partition.values())
         pos = {}
         for node, data in G.nodes.items():
-            pos[node] = (data.get('x'), -data.get('y') - 1080 * data.get('viewIdx'))  # 这里正负号好像错了
+            pos[node] = (data.get('x') + f_w * (data.get('viewIdx') % 3),
+                         -data.get('y') - f_h * int(data.get('viewIdx') / 3))  # 这里正负号好像错了
             data['value'] = partition[node]
             node_list[data.get("viewIdx")].append(data)
 
@@ -513,7 +516,12 @@ def main():
                            color=get_color(data.get('value'), maxCommuIdx), thickness=-1)
                 cv2.putText(img[viewIdx], text=str(data.get('value')), org=(int(data.get('x')), int(data.get('y'))),
                             color=(256, 256, 256), fontScale=0.3, fontFace=cv2.FONT_HERSHEY_TRIPLEX, thickness=1)
-        frame = cv2.vconcat(img)  # Python OPenCV 图片简单拼接 hconcat vconcat函数使用
+        frame = np.zeros((f_h * 2, f_w * 3, 3), np.uint8)
+        frame[0:f_h, 0:f_w] = img[0]
+        frame[0:f_h, f_w:2 * f_w] = img[1]
+        frame[0:f_h, 2 * f_w:3 * f_w] = img[2]
+        frame[f_h:2*f_h, 0:f_w] = img[3]
+        frame[f_h:2*f_h, f_w:2*f_w] = img[4]
         cv2.imwrite('../output/tmp/' + str(frameIdx) + '.jpg', frame)  # 存储为图像
         frameIdx += 1
         # node_list.clear()
