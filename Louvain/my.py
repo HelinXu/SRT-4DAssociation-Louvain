@@ -172,7 +172,7 @@ def best_partition(graph,
                                 resolution,
                                 randomize,
                                 random_state)  # 类型就是 partition 是一个树状图，每一层是一个partition（字典）
-    return partition_at_level(dendo, 1)
+    return partition_at_level(dendo, len(dendo) - 1)  # 这里之前竟然一直写错了
 
 
 def generate_dendrogram(graph,
@@ -448,7 +448,8 @@ def build_from_4d(frameIdx):
         line = f.readline().split()
         if line[0] == 'P':
             break
-        G.add_node(int(line[0]),
+        if int(line[2]) == 0:
+            G.add_node(int(line[0]),
                    viewIdx=int(line[1]),
                    jointIdx=int(line[2]),
                    candidIdx=int(line[3]),
@@ -459,17 +460,18 @@ def build_from_4d(frameIdx):
         line = f.readline().split()
         if line[0] == 'E':
             break
-        G.add_edge(int(line[2]),
-                   int(line[3]),
-                   viewIdx=int(line[0]),
-                   pafIdx=int(line[1]),
-                   weight=float(line[6])*4)
+        # G.add_edge(int(line[2]),
+        #            int(line[3]),
+        #            viewIdx=int(line[0]),
+        #            pafIdx=int(line[1]),
+        #            weight=float(line[6])*0)
     while True:
         # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
         line = f.readline().split()
         if line[0] == 'end':
             break
-        G.add_edge(int(line[3]),
+        if int(line[0]) == 0:
+            G.add_edge(int(line[3]),
                    int(line[4]),
                    weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
     return G
@@ -493,7 +495,7 @@ def main():
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
-        partition = best_partition(G, resolution=10.0)  # 返回一个字典：node 2 community
+        partition = best_partition(G, resolution=1.0)  # 返回一个字典：node 2 community
         # draw the graph
         # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
         maxCommuIdx = max(partition.values())
