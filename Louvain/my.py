@@ -444,12 +444,18 @@ def build_from_4d(frameIdx):
 def main():
     capture = []  # 这个数据类型对了吗
     img = []
-    frameIdx = 0
+    initalFrameIdx = 100
+    frameIdx = initalFrameIdx
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
         img.append(None)  # 需要初始化开辟空间
     f_h = int(capture[0].get(cv2.CAP_PROP_FRAME_HEIGHT))
     f_w = int(capture[0].get(cv2.CAP_PROP_FRAME_WIDTH))
+    for i in range(initalFrameIdx):
+        for viewIdx in range(5):
+            ret, img[viewIdx] = capture[viewIdx].read()
+            if not ret:
+                break  # 当获取完最后一帧就结束
 
     while True:
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
