@@ -416,23 +416,28 @@ def build_from_4d(frameIdx):
                    x=float(line[4]),
                    y=float(line[5]),
                    score=float(line[6]))
+    for node in G.nodes:
+        for node2 in G.nodes:
+            if node != node2:
+                G.add_edge(node, node2, weight=2.0)
     while True:  # 读入并添加所有的边
         line = f.readline().split()
         if line[0] == 'E':
             break
-        G.add_edge(int(line[2]),
-                   int(line[3]),
-                   viewIdx=int(line[0]),
-                   pafIdx=int(line[1]),
-                   weight=float(line[6]))
+        # G.add_edge(int(line[2]),
+        #            int(line[3]),
+        #            viewIdx=int(line[0]),
+        #            pafIdx=int(line[1]),
+        #            weight=float(line[6]))
     while True:
         # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
         line = f.readline().split()
         if line[0] == 'end':
             break
-        G.add_edge(int(line[3]),
-                   int(line[4]),
-                   weight=max(0.0, float(line[5])))  # 暂时只加了这么多参数 注意louvain原始算法不允许-1
+        if line[5] != '-1':
+            G[int(line[3])][int(line[4])]['weight'] += float(line[5]) * 2.0
+        else:
+            G[int(line[3])][int(line[4])]['weight'] = 0.01
     return G
 
 
@@ -450,7 +455,30 @@ def main():
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
-        partition = best_partition(G, resolution=0.05)  # 返回一个字典：node 2 community
+        partition = best_partition(G, resolution=0.9)  # 返回一个字典：node 2 community
+
+        f = open("../output/txt/frame" + str(frameIdx) + ".txt", "r")
+        f.readline()  # J OverallIdx viewIdx joint种类0-18(jointIdx) 该joint在图中的顺序(candidix) x y score
+        while True:  # 读入并添加所有的点
+            line = f.readline().split()
+            if line[0] == 'P':
+                break
+        while True:  # 读入并添加所有的边
+            line = f.readline().split()
+            if line[0] == 'E':
+                break
+            G[int(line[2])][int(line[3])]['weight'] += float(line[6]) * 4.0
+        while True:
+            # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
+            line = f.readline().split()
+            if line[0] == 'end':
+                break
+            if line[5] != '-1':
+                G[int(line[3])][int(line[4])]['weight'] -= float(line[5]) * 1.6
+            else:
+                G[int(line[3])][int(line[4])]['weight'] = 0.01
+
+        partition = best_partition(G, partition, resolution=1.0)
         # draw the graph
         maxCommuIdx = max(partition.values())
         pos = {}
