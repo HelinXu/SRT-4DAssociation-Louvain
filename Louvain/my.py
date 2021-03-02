@@ -444,7 +444,7 @@ def build_from_4d(frameIdx):
 def main():
     capture = []  # 这个数据类型对了吗
     img = []
-    initalFrameIdx = 100
+    initalFrameIdx = 30
     frameIdx = initalFrameIdx
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
