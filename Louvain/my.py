@@ -62,14 +62,14 @@ class Status(object):
         self.total_weight = graph.size(weight=weight)  # Return the number of edges or total of all edge weights.
         if part is None:
             # 对于从头开始的构建的情况
-            for node in graph.nodes():   # node，node形成的list 遍历list中每一个node
-                self.node2com[node] = count   # community的编号 计数
-                deg = float(graph.degree(node, weight=weight))   # 对于现在遍历到的这个node，取它的度 float，为边权和
+            for node in graph.nodes():  # node，node形成的list 遍历list中每一个node
+                self.node2com[node] = count  # community的编号 计数
+                deg = float(graph.degree(node, weight=weight))  # 对于现在遍历到的这个node，取它的度 float，为边权和
                 if deg < 0:
                     error = "Bad node degree ({})".format(deg)
                     raise ValueError(error)
-                self.degrees[count] = deg   # count-当前community编号。给degree词典初始化对应community的度（com-degree）
-                self.gdegrees[node] = deg   # key为节点。初始化节点-节点的度的词典。
+                self.degrees[count] = deg  # count-当前community编号。给degree词典初始化对应community的度（com-degree）
+                self.gdegrees[node] = deg  # key为节点。初始化节点-节点的度的词典。
                 # This is identical to G[u][v] except the default is returned
                 # instead of an exception is the edge doesn't exist.
                 edge_data = graph.get_edge_data(
@@ -123,7 +123,7 @@ def check_random_state(seed):
                      " instance" % seed)
 
 
-def partition_at_level(dendrogram, level):  # 读入返回都是 dendo 或 partition （node 2 community 的字典）TODO
+def partition_at_level(dendrogram, level):  # 读入返回都是 dendo 或 partition （node 2 community 的字典）
     partition = dendrogram[0].copy()
     for index in range(1, level + 1):
         for node, community in partition.items():
@@ -142,7 +142,7 @@ def modularity(partition, graph, weight='weight'):
         raise ValueError("A graph without link has an undefined modularity")
 
     for node in graph.nodes():  # 这句本来是for node in graph:
-        com = partition[node]   # node 2 community
+        com = partition[node]  # node 2 community
         deg[com] = deg.get(com, 0.) + graph.degree(node, weight=weight)  # community的度
         for neighbor, datas in graph.nodes.items():  # Python 字典(Dictionary) items() 函数以列表返回可遍历的(键, 值) 元组数组。
             # 上一句本来是for neighbor, datas in graph[node].items():
@@ -350,7 +350,7 @@ def __neighcom(node, graph, status, weight_key):
             neighborcom = status.node2com[neighbor]
             weights[neighborcom] = weights.get(neighborcom, 0) + edge_weight
 
-    return weights   # community 2 weights
+    return weights  # community 2 weights
 
 
 def __remove(node, com, weight, status):
@@ -378,7 +378,7 @@ def __modularity(status, resolution):
     """
     links = float(status.total_weight)
     result = 0.
-    for community in set(status.node2com.values()):   # set() 函数创建一个无序不重复元素集，可进行关系测试，删除重复数据，还可以计算交集、差集、并集等。
+    for community in set(status.node2com.values()):  # set() 函数创建一个无序不重复元素集，可进行关系测试，删除重复数据，还可以计算交集、差集、并集等。
         in_degree = status.internals.get(community, 0.)
         degree = status.degrees.get(community, 0.)
         if links > 0:
@@ -423,12 +423,18 @@ def hsv2rgb(h, s, v):
     q = v * (1 - f * s)
     t = v * (1 - (1 - f) * s)
     r, g, b = 0, 0, 0
-    if hi == 0: r, g, b = v, t, p
-    elif hi == 1: r, g, b = q, v, p
-    elif hi == 2: r, g, b = p, v, t
-    elif hi == 3: r, g, b = p, q, v
-    elif hi == 4: r, g, b = t, p, v
-    elif hi == 5: r, g, b = v, p, q
+    if hi == 0:
+        r, g, b = v, t, p
+    elif hi == 1:
+        r, g, b = q, v, p
+    elif hi == 2:
+        r, g, b = p, v, t
+    elif hi == 3:
+        r, g, b = p, q, v
+    elif hi == 4:
+        r, g, b = t, p, v
+    elif hi == 5:
+        r, g, b = v, p, q
     r, g, b = int(r * 255), int(g * 255), int(b * 255)
     return r, g, b
 
@@ -459,11 +465,11 @@ def build_from_4d(frameIdx):
         line = f.readline().split()
         if line[0] == 'E':
             break
-        # G.add_edge(int(line[2]),
-        #            int(line[3]),
-        #            viewIdx=int(line[0]),
-        #            pafIdx=int(line[1]),
-        #            weight=float(line[6])*0)
+        G.add_edge(int(line[2]),
+                   int(line[3]),
+                   viewIdx=int(line[0]),
+                   pafIdx=int(line[1]),
+                   weight=float(line[6]))
     while True:
         # 读入epiEdges: jointIdx viewA viewB aOverAllIdx bOverallIdx score
         line = f.readline().split()
@@ -478,7 +484,6 @@ def build_from_4d(frameIdx):
 def main():
     capture = []  # 这个数据类型对了吗
     img = []
-    node_img = [[] for i in range(5)]  # 这个用来从networkx画点
     frameIdx = 0
     for i in range(5):
         capture.append(cv2.VideoCapture("../data/shelf/video/" + str(i) + ".mp4"))
@@ -486,16 +491,12 @@ def main():
     f_h = int(capture[0].get(cv2.CAP_PROP_FRAME_HEIGHT))
     f_w = int(capture[0].get(cv2.CAP_PROP_FRAME_WIDTH))
 
-    # total_frame = capture[0].get(cv2.CAP_PROP_FRAME_COUNT)  # 视频的总帧数
-    # for frameIdx in range(min(30, total_frame)):
-
     while True:
         node_list = [[] for i in range(5)]  # 这个用来从networkx画点
         G = build_from_4d(frameIdx)  # frameIdx
         # compute the best partition
         partition = best_partition(G, resolution=0.05)  # 返回一个字典：node 2 community
         # draw the graph
-        # cmap = cm.get_cmap('viridis', max(partition.values()) + 1)
         maxCommuIdx = max(partition.values())
         pos = {}
         for node, data in G.nodes.items():
@@ -508,10 +509,7 @@ def main():
             ret, img[viewIdx] = capture[viewIdx].read()
             if not ret:
                 break  # 当获取完最后一帧就结束
-            # node_img[viewIdx] = np.zeros([512, 512, 3], np.uint8)  # 创建一副黑色的图片
             for data in node_list[viewIdx]:
-                # cv2.circle(node_img[viewIdx], center=(int(data.get('x')), int(data.get('y'))), radius=2, color=(100,100,100))
-                # 视频的帧率FPS https://blog.csdn.net/learn_learn_/article/details/112007757
                 cv2.circle(img[viewIdx], center=(int(data.get('x')), int(data.get('y'))), radius=5,
                            color=get_color(data.get('value'), maxCommuIdx), thickness=-1)
                 cv2.putText(img[viewIdx], text=str(data.get('value')), org=(int(data.get('x')), int(data.get('y'))),
@@ -520,8 +518,8 @@ def main():
         frame[0:f_h, 0:f_w] = img[0]
         frame[0:f_h, f_w:2 * f_w] = img[1]
         frame[0:f_h, 2 * f_w:3 * f_w] = img[2]
-        frame[f_h:2*f_h, 0:f_w] = img[3]
-        frame[f_h:2*f_h, f_w:2*f_w] = img[4]
+        frame[f_h:2 * f_h, 0:f_w] = img[3]
+        frame[f_h:2 * f_h, f_w:2 * f_w] = img[4]
         cv2.imwrite('../output/tmp/' + str(frameIdx) + '.jpg', frame)  # 存储为图像
         frameIdx += 1
         # node_list.clear()
@@ -533,11 +531,7 @@ def main():
                                cmap=cmap, node_color=list(partition.values()))
         nx.draw_networkx_edges(G, pos, alpha=0.5, width=[float(d['weight']) for (u, v, d) in G.edges(data=True)])
         plt.savefig("../output/tmp/Graph" + str(frameIdx) + '.jpg', format="JPG")
-        # networkx 存文件 https://www.coder.work/article/361314
         plt.show()
-
-
-
 
 
 if __name__ == '__main__':
